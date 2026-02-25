@@ -71,7 +71,7 @@ class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         # users can only access their own tasks
-        return Task.objects.filter(user.self.request.user)
+        return Task.objects.filter(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         task = self.get_object()
