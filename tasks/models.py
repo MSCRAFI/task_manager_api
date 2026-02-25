@@ -21,7 +21,7 @@ class Task(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, default='')
-    priority = models.Charfield(
+    priority = models.CharField(
         max_length=10,
         choices=PRIORITY_CHOICES,
         default='medium'

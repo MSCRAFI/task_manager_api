@@ -1,4 +1,4 @@
-from rest_framework import generics, filters
+from rest_framework import generics, filters, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -59,26 +59,26 @@ class TaskListCreateView(generics.ListCreateAPIView):
         response_serializer = TaskCreateSerializer(task)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-        class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-            """
-            GET    /api/tasks/<id>/   - get a single task
-            PUT    /api/tasks/<id>/   - full update
-            PATCH  /api/tasks/<id>/   - partial update
-            DELETE /api/tasks/<id>/   - delete a task
-            """
-            permission_classes = [IsAuthenticated]
-            serializer_class = TaskSerializer
+class TaskRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET    /api/tasks/<id>/   - get a single task
+    PUT    /api/tasks/<id>/   - full update
+    PATCH  /api/tasks/<id>/   - partial update
+    DELETE /api/tasks/<id>/   - delete a task
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
 
-            def get_queryset(self):
-                # users can only access their own tasks
-                return Task.objects.filter(user.self.request.user)
+    def get_queryset(self):
+        # users can only access their own tasks
+        return Task.objects.filter(user.self.request.user)
 
-            def destroy(self, request, *args, **kwargs):
-                task = self.get_object()
-                task_title = task.title
-                task.delete()
+    def destroy(self, request, *args, **kwargs):
+        task = self.get_object()
+        task_title = task.title
+        task.delete()
 
-                return Response(
-                    {'message': f'Task "{task_title}" deleted successfully.'},
-                    status=status.HTTP_200_OK
-                )
+        return Response(
+            {'message': f'Task "{task_title}" deleted successfully.'},
+            status=status.HTTP_200_OK
+        )
