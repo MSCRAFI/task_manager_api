@@ -10,7 +10,7 @@ Login
 ![Login](img/login.png)
 Dashboard
 ![Main Dashboard](img/dashboard.png)
-Register
+Update
 ![Update](img/update.png)
 
 
