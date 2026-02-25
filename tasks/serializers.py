@@ -23,6 +23,10 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
+        fields = [
+            'id', 'title', 'description', 'priority',
+            'status', 'due_date'
+        ]
 
     def validate_title(self, value):
         if not value.strip():
