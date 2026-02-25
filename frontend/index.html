@@ -279,6 +279,7 @@ let nextCursor = null;
 let isFetching = false;
 let allLoadedTasks = [];
 let modalTaskData = null;
+const taskCache = new Map(); // id -> full lightweight task object for card edits
 
 // ─── HELPERS ──────────────────────────────
 function authHeaders() {
@@ -433,6 +434,7 @@ async function fetchNextPage() {
       document.getElementById('taskCountBar').classList.remove('hidden');
       const fragment = document.createDocumentFragment();
       tasks.forEach(t => {
+        taskCache.set(t.id, t);   // cache for safe card-level edit (no inline string escaping)
         const div = document.createElement('div');
         div.innerHTML = renderTask(t);
         fragment.appendChild(div.firstElementChild);
@@ -467,7 +469,7 @@ function renderTask(task) {
           </div>
         </div>
         <div class="flex gap-1 flex-shrink-0" onclick="event.stopPropagation()">
-          <button onclick="startEdit({id:${task.id},title:'${escapeHtml(task.title)}',priority:'${task.priority}',status:'${task.status}',due_date:'${task.due_date||''}',description:''})"
+          <button onclick="startEditById(${task.id}); event.stopPropagation();"
             class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">✏️</button>
           <button onclick="deleteTask(${task.id},'${escapeHtml(task.title)}')"
             class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">🗑️</button>
@@ -501,7 +503,9 @@ function closeModal() {
   modalTaskData = null;
 }
 function editFromModal() {
-  if (modalTaskData) { closeModal(); startEdit(modalTaskData); }
+  const task = modalTaskData;   // snapshot BEFORE closeModal() nulls it
+  closeModal();                 // safe now — uses snapshot below
+  if (task) startEdit(task);
 }
 
 // ─── CREATE / UPDATE ──────────────────────
@@ -524,6 +528,18 @@ async function handleSaveTask(e) {
     cancelEdit();
     resetAndFetch();
   } catch(err) { showError('taskFormError', err.message); }
+}
+
+function startEditById(id) {
+  // Fetch full task from API so description is included (list response omits it)
+  fetch(`${API_BASE}/tasks/${id}/`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(task => startEdit(task))
+    .catch(() => {
+      // Fallback to cached lightweight data if fetch fails
+      const cached = taskCache.get(id);
+      if (cached) startEdit(cached);
+    });
 }
 
 function startEdit(task) {
