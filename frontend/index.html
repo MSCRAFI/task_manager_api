@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager — MD Salman Chowdhury</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 font-sans">
+
+<!-- ========== AUTH SECTION ========== -->
+<div id="authSection" class="flex items-center justify-center min-h-screen p-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
+      <h1 class="text-2xl font-bold">📋 Task Manager</h1>
+      <p class="text-indigo-200 text-sm mt-1">MD Salman Chowdhury</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200">
+      <button onclick="switchTab('login')" id="loginTab"
+        class="flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition-all">
+        Sign In
+      </button>
+      <button onclick="switchTab('register')" id="registerTab"
+        class="flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent transition-all hover:text-indigo-600">
+        Register
+      </button>
+    </div>
+
+    <div class="p-8">
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <input id="loginUsername" type="text" required placeholder="Enter username"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input id="loginPassword" type="password" required placeholder="Enter password"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div id="loginError" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <button type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <input id="regFirstName" type="text" placeholder="John"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <input id="regLastName" type="text" placeholder="Doe"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <input id="regUsername" type="text" required placeholder="Choose a username"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input id="regEmail" type="email" required placeholder="you@example.com"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input id="regPassword" type="password" required placeholder="Min 8 characters"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+          <input id="regPassword2" type="password" required placeholder="Repeat password"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+        </div>
+        <div id="registerError" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <button type="submit"
+          class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD SECTION ========== -->
+<div id="dashboard" class="hidden min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">📋</span>
+        <span class="font-bold text-gray-800">Task Manager</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-600">Hello, <strong id="navUsername" class="text-indigo-600"></strong></span>
+        <button onclick="handleLogout()"
+          class="text-sm text-red-600 hover:text-red-800 font-medium transition-colors">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8">
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+        <div id="statTotal" class="text-2xl font-bold text-gray-800">0</div>
+        <div class="text-xs text-gray-500 mt-1">Total Tasks</div>
+      </div>
+      <div class="bg-yellow-50 rounded-xl p-4 shadow-sm border border-yellow-100 text-center">
+        <div id="statPending" class="text-2xl font-bold text-yellow-600">0</div>
+        <div class="text-xs text-gray-500 mt-1">Pending</div>
+      </div>
+      <div class="bg-blue-50 rounded-xl p-4 shadow-sm border border-blue-100 text-center">
+        <div id="statInProgress" class="text-2xl font-bold text-blue-600">0</div>
+        <div class="text-xs text-gray-500 mt-1">In Progress</div>
+      </div>
+      <div class="bg-green-50 rounded-xl p-4 shadow-sm border border-green-100 text-center">
+        <div id="statCompleted" class="text-2xl font-bold text-green-600">0</div>
+        <div class="text-xs text-gray-500 mt-1">Completed</div>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- Create / Edit Task Form -->
+      <div class="lg:w-80 flex-shrink-0">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+          <h2 id="formTitle" class="text-base font-semibold text-gray-800 mb-4">➕ New Task</h2>
+          <form onsubmit="handleSaveTask(event)" class="space-y-4">
+            <input type="hidden" id="editTaskId" />
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+              <input id="taskTitle" type="text" required placeholder="Task title"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+              <textarea id="taskDesc" rows="3" placeholder="Optional details..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+                <select id="taskPriority"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                <select id="taskStatus"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                  <option value="pending" selected>Pending</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Due Date</label>
+              <input id="taskDueDate" type="date"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+            </div>
+            <div id="taskFormError" class="hidden text-red-600 text-xs bg-red-50 p-2 rounded-lg"></div>
+            <div class="flex gap-2">
+              <button type="submit" id="saveBtn"
+                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-colors text-sm">
+                Save Task
+              </button>
+              <button type="button" onclick="cancelEdit()" id="cancelBtn"
+                class="hidden px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Task List -->
+      <div class="flex-1">
+        <!-- Filter Bar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+          <div class="flex flex-wrap gap-3 items-center">
+            <input id="searchInput" type="text" placeholder="🔍 Search tasks..."
+              oninput="fetchTasks()"
+              class="flex-1 min-w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+            <select id="filterStatus" onchange="fetchTasks()"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select id="filterPriority" onchange="fetchTasks()"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+              <option value="">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Task Cards -->
+        <div id="taskList" class="space-y-3"></div>
+        <div id="emptyState" class="hidden text-center py-16 text-gray-400">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="font-medium">No tasks found</p>
+          <p class="text-sm mt-1">Create your first task using the form!</p>
+        </div>
+        <div id="taskLoading" class="text-center py-8 text-gray-400 text-sm">Loading tasks...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ========== SCRIPTS ========== -->
+<script>
+  const API_BASE = '/api';
+  let accessToken = localStorage.getItem('access_token') || '';
+  let currentUser = JSON.parse(localStorage.getItem('current_user') || 'null');
+
+  // ---- HELPERS ----
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` };
+  }
+
+  function showError(elId, msg) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function hideError(elId) {
+    document.getElementById(elId).classList.add('hidden');
+  }
+
+  function priorityBadge(p) {
+    const map = { high: 'bg-red-100 text-red-700', medium: 'bg-yellow-100 text-yellow-700', low: 'bg-green-100 text-green-700' };
+    return `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${map[p] || ''}">${p.charAt(0).toUpperCase() + p.slice(1)}</span>`;
+  }
+
+  function statusBadge(s) {
+    const map = {
+      pending: 'bg-gray-100 text-gray-700',
+      in_progress: 'bg-blue-100 text-blue-700',
+      completed: 'bg-green-100 text-green-700'
+    };
+    const label = s === 'in_progress' ? 'In Progress' : s.charAt(0).toUpperCase() + s.slice(1);
+    return `<span class="px-2 py-0.5 text-xs font-semibold rounded-full ${map[s] || ''}">${label}</span>`;
+  }
+
+  // ---- AUTH TABS ----
+  function switchTab(tab) {
+    document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+    document.getElementById('loginTab').className = tab === 'login'
+      ? 'flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition-all'
+      : 'flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent transition-all hover:text-indigo-600';
+    document.getElementById('registerTab').className = tab === 'register'
+      ? 'flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 transition-all'
+      : 'flex-1 py-3 text-sm font-semibold text-gray-400 border-b-2 border-transparent transition-all hover:text-indigo-600';
+  }
+
+  // ---- AUTH ACTIONS ----
+  async function handleLogin(e) {
+    e.preventDefault();
+    hideError('loginError');
+    const body = {
+      username: document.getElementById('loginUsername').value,
+      password: document.getElementById('loginPassword').value
+    };
+    try {
+      const res = await fetch(`${API_BASE}/auth/login/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Invalid credentials');
+      accessToken = data.access;
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', data.refresh);
+      localStorage.setItem('current_user', JSON.stringify(data.user));
+      currentUser = data.user;
+      showDashboard();
+    } catch (err) {
+      showError('loginError', err.message);
+    }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    hideError('registerError');
+    const body = {
+      username: document.getElementById('regUsername').value,
+      email: document.getElementById('regEmail').value,
+      first_name: document.getElementById('regFirstName').value,
+      last_name: document.getElementById('regLastName').value,
+      password: document.getElementById('regPassword').value,
+      password2: document.getElementById('regPassword2').value,
+    };
+    try {
+      const res = await fetch(`${API_BASE}/auth/register/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = Object.values(data).flat().join(' ');
+        throw new Error(msg);
+      }
+      accessToken = data.tokens.access;
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', data.tokens.refresh);
+      localStorage.setItem('current_user', JSON.stringify(data.user));
+      currentUser = data.user;
+      showDashboard();
+    } catch (err) {
+      showError('registerError', err.message);
+    }
+  }
+
+  async function handleLogout() {
+    const refresh = localStorage.getItem('refresh_token');
+    if (refresh) {
+      await fetch(`${API_BASE}/auth/logout/`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ refresh }) }).catch(() => {});
+    }
+    accessToken = '';
+    currentUser = null;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('current_user');
+    showAuth();
+  }
+
+  // ---- DASHBOARD ----
+  function showDashboard() {
+    document.getElementById('authSection').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('navUsername').textContent = currentUser?.username || 'User';
+    fetchTasks();
+  }
+
+  function showAuth() {
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('authSection').classList.remove('hidden');
+  }
+
+  // ---- TASKS ----
+  let debounceTimer;
+  async function fetchTasks() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      document.getElementById('taskLoading').classList.remove('hidden');
+      document.getElementById('taskList').innerHTML = '';
+      document.getElementById('emptyState').classList.add('hidden');
+
+      const search = document.getElementById('searchInput').value;
+      const status = document.getElementById('filterStatus').value;
+      const priority = document.getElementById('filterPriority').value;
+
+      let url = `${API_BASE}/tasks/?`;
+      if (search) url += `search=${encodeURIComponent(search)}&`;
+      if (status) url += `status=${status}&`;
+      if (priority) url += `priority=${priority}&`;
+
+      try {
+        const res = await fetch(url, { headers: authHeaders() });
+        if (res.status === 401) { handleLogout(); return; }
+        const data = await res.json();
+        document.getElementById('taskLoading').classList.add('hidden');
+
+        const tasks = data.results || data;
+        renderStats(tasks);
+        if (tasks.length === 0) {
+          document.getElementById('emptyState').classList.remove('hidden');
+        } else {
+          document.getElementById('taskList').innerHTML = tasks.map(renderTask).join('');
+        }
+      } catch (err) {
+        document.getElementById('taskLoading').textContent = 'Error loading tasks.';
+      }
+    }, 300);
+  }
+
+  function renderStats(tasks) {
+    document.getElementById('statTotal').textContent = tasks.length;
+    document.getElementById('statPending').textContent = tasks.filter(t => t.status === 'pending').length;
+    document.getElementById('statInProgress').textContent = tasks.filter(t => t.status === 'in_progress').length;
+    document.getElementById('statCompleted').textContent = tasks.filter(t => t.status === 'completed').length;
+  }
+
+  function renderTask(task) {
+    const due = task.due_date ? `<span class="text-xs text-gray-400">📅 ${task.due_date}</span>` : '';
+    const isCompleted = task.status === 'completed';
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 fade-in ${isCompleted ? 'opacity-60' : ''}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-800 ${isCompleted ? 'line-through text-gray-400' : ''} truncate">${escapeHtml(task.title)}</h3>
+            ${task.description ? `<p class="text-sm text-gray-500 mt-1 line-clamp-2">${escapeHtml(task.description)}</p>` : ''}
+            <div class="flex flex-wrap items-center gap-2 mt-2">
+              ${priorityBadge(task.priority)}
+              ${statusBadge(task.status)}
+              ${due}
+            </div>
+          </div>
+          <div class="flex gap-1 flex-shrink-0">
+            <button onclick="startEdit(${JSON.stringify(task).replace(/"/g, '&quot;')})"
+              class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">✏️</button>
+            <button onclick="deleteTask(${task.id}, '${escapeHtml(task.title)}')"
+              class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function handleSaveTask(e) {
+    e.preventDefault();
+    hideError('taskFormError');
+    const id = document.getElementById('editTaskId').value;
+    const body = {
+      title: document.getElementById('taskTitle').value,
+      description: document.getElementById('taskDesc').value,
+      priority: document.getElementById('taskPriority').value,
+      status: document.getElementById('taskStatus').value,
+      due_date: document.getElementById('taskDueDate').value || null,
+    };
+
+    const url = id ? `${API_BASE}/tasks/${id}/` : `${API_BASE}/tasks/`;
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = Object.values(data).flat().join(' ');
+        throw new Error(msg);
+      }
+      cancelEdit();
+      fetchTasks();
+    } catch (err) {
+      showError('taskFormError', err.message);
+    }
+  }
+
+  function startEdit(task) {
+    document.getElementById('editTaskId').value = task.id;
+    document.getElementById('taskTitle').value = task.title;
+    document.getElementById('taskDesc').value = task.description || '';
+    document.getElementById('taskPriority').value = task.priority;
+    document.getElementById('taskStatus').value = task.status;
+    document.getElementById('taskDueDate').value = task.due_date || '';
+    document.getElementById('formTitle').textContent = '✏️ Edit Task';
+    document.getElementById('saveBtn').textContent = 'Update Task';
+    document.getElementById('cancelBtn').classList.remove('hidden');
+    document.getElementById('taskTitle').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    document.getElementById('editTaskId').value = '';
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDesc').value = '';
+    document.getElementById('taskPriority').value = 'medium';
+    document.getElementById('taskStatus').value = 'pending';
+    document.getElementById('taskDueDate').value = '';
+    document.getElementById('formTitle').textContent = '➕ New Task';
+    document.getElementById('saveBtn').textContent = 'Save Task';
+    document.getElementById('cancelBtn').classList.add('hidden');
+    hideError('taskFormError');
+  }
+
+  async function deleteTask(id, title) {
+    if (!confirm(`Delete task "${title}"?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/tasks/${id}/`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error('Delete failed');
+      fetchTasks();
+    } catch (err) {
+      alert('Could not delete task. Please try again.');
+    }
+  }
+
+  // ---- INIT ----
+  if (accessToken && currentUser) {
+    showDashboard();
+  }
+</script>
+</body>
+</html>
