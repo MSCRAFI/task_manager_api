@@ -56,8 +56,10 @@ class RegisterView(generics.CreateAPIView):
                 'username': user.username,
                 'email': user.email,
             },
-            'tokens': str(refresh),
-            'access': str(refresh.access_token),
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
         }, status=status.HTTP_201_CREATED)
 
 class LogoutView(APIView):

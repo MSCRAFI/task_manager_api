@@ -29,7 +29,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Title cannot be blank.")
         return value.strip()
 
-    def create(self. validated_data):
+    def create(self, validated_data):
         # auto assign the logged in user
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
